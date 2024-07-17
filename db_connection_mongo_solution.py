@@ -1,3 +1,11 @@
+#-------------------------------------------------------------------------
+# AUTHOR: Ethan Ko
+# FILENAME: db_connection_mongo_solution.py
+# SPECIFICATION: This program manages documents in a MongoDB database and generates an inverted index based on term frequencies. It includes functions to create, update, and delete documents, as well as generate an inverted index. 
+# The user can interact with the database through a simple menu-driven interface, making it easy to manage and query documents.
+# FOR: CS 4250- Assignment #2
+# TIME SPENT: 10+ hours
+#-----------------------------------------------------------*/
 from pymongo import MongoClient
 from db_connection_mongo_solution import *
 
