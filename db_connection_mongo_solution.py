@@ -7,54 +7,65 @@
 # TIME SPENT: 10+ hours
 #-----------------------------------------------------------*/
 from pymongo import MongoClient
-from db_connection_mongo_solution import *
 
-if __name__ == '__main__':
-    # Connecting to the database
-    db = connectDataBase()
-    # Creating a collection
-    documents = db.documents
-    
-    # Print menu
-    print("")
-    print("######### Menu ##############")
-    print("#a - Create a document")
-    print("#b - Update a document")
-    print("#c - Delete a document.")
-    print("#d - Output the inverted index.")
-    print("#q - Quit")
-    
-    option = ""
-    while option != "q":
-        print("")
-        option = input("Enter a menu choice: ")
-        
-        if option == "a":
-            docId = input("Enter the ID of the document: ")
-            docText = input("Enter the text of the document: ")
-            docTitle = input("Enter the title of the document: ")
-            docDate = input("Enter the date of the document: ")
-            docCat = input("Enter the category of the document: ")
-            createDocument(documents, docId, docText, docTitle, docDate, docCat)
-        
-        elif option == "b":
-            docId = input("Enter the ID of the document: ")
-            docText = input("Enter the updated text of the document: ")
-            docTitle = input("Enter the updated title of the document: ")
-            docDate = input("Enter the updated date of the document: ")
-            docCat = input("Enter the updated category of the document: ")
-            updateDocument(documents, docId, docText, docTitle, docDate, docCat)
-        
-        elif option == "c":
-            docId = input("Enter the document id to be deleted: ")
-            deleteDocument(documents, docId)
-        
-        elif option == "d":
-            index = getIndex(documents)
-            print(index)
-        
-        elif option == "q":
-            print("Leaving the application ...")
-        
+def connectDataBase():
+    # Create a MongoClient to connect to MongoDB running on localhost:27017
+    client = MongoClient('mongodb://localhost:27017/')
+    # Access or create a database named 'mydatabase'
+    db = client['mydatabase']
+    return db
+
+def createDocument(col, docId, docText, docTitle, docDate, docCat):
+    # Create a dictionary to count term frequencies
+    term_count = {}
+    # Split the text into terms, convert to lowercase, and count frequencies
+    terms = docText.lower().split()
+    for term in terms:
+        if term in term_count:
+            term_count[term] += 1
         else:
-            print("Invalid Choice.")
+            term_count[term] = 1
+    
+    # Prepare the document object
+    document = {
+        "id": docId,
+        "text": docText,
+        "title": docTitle,
+        "date": docDate,
+        "category": docCat,
+        "term_count": term_count  # Include term frequency in the document
+    }
+    
+    # Insert the document into the collection
+    col.insert_one(document)
+    print("Document inserted successfully.")
+
+def deleteDocument(col, docId):
+    # Delete the document with the given docId from the collection
+    result = col.delete_one({"id": docId})
+    if result.deleted_count > 0:
+        print(f"Document with id {docId} deleted successfully.")
+    else:
+        print(f"No document found with id {docId}.")
+
+def updateDocument(col, docId, docText, docTitle, docDate, docCat):
+    # Update the document with the given docId
+    # First, delete the existing document
+    deleteDocument(col, docId)
+    # Then, create a new document with the updated information
+    createDocument(col, docId, docText, docTitle, docDate, docCat)
+
+def getIndex(col):
+    # Query the collection to generate the inverted index
+    inverted_index = {}
+    cursor = col.find({})
+    
+    for document in cursor:
+        terms = document['term_count']
+        for term, count in terms.items():
+            if term in inverted_index:
+                inverted_index[term] += f",{document['title']}:{count}"
+            else:
+                inverted_index[term] = f"{document['title']}:{count}"
+    
+    return inverted_index
