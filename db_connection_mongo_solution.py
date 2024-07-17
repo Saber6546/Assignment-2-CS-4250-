@@ -33,7 +33,7 @@ def createDocument(col, docId, docText, docTitle, docDate, docCat):
         "title": docTitle,
         "date": docDate,
         "category": docCat,
-        "term_count": term_count  # Include term frequency in the document
+        "term_count": term_count 
     }
     
     # Insert the document into the collection
